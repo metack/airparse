@@ -1,1 +1,1 @@
-cucumber -q |tee test_results.txt
+cucumber -q |tee ./test_results.txt

@@ -91,34 +91,34 @@ airparse.rb script runs its' main method that calls AirParse.parse method for ea
 
 ## How to play?
 
-1. start with a blank rules file (like 'lib/norules.rb' sample or the default 'lib/airparsedefaultrules.rb')
-2. running airparse with '--rules NoRules' switch does nothing, the 'output.csv' will be equal to 'input.csv'
-3. create your own rules file, eg: 'lib/yourrulesclass.rb'; make sure you name the class after the filename, like 'YourRulesClass' (camelcase class naming convention)
-4. proceed step-by-step by adding *validators* as methods named with the pattern 'def is_valid_*', where * is the exact name of the csv column  (ex. def is_valid_carrier_code)
-5. add *processors* as methods named with the pattern 'def process_*', where * is the exact name of the csv column (ex. def process_carrier_code)
-6. run again:'./airparse.rb -f sample_data.csv -o result.csv -e errors.csv -r YourRulesClass'
+1. start with a blank rules file (like `lib/norules.rb` sample or the default `lib/airparsedefaultrules.rb`)
+2. running airparse with `--rules NoRules` switch does nothing, the `output.csv` will be equal to `input.csv`
+3. create your own rules file, eg: `lib/yourrulesclass.rb`; make sure you name the class after the filename, like `YourRulesClass` (camelcase class naming convention)
+4. proceed step-by-step by adding *validators* as methods named with the pattern `def is_valid_*`, where * is the exact name of the csv column  (ex. def is_valid_carrier_code)
+5. add *processors* as methods named with the pattern `def process_*`, where * is the exact name of the csv column (ex. def process_carrier_code)
+6. run again: `./airparse.rb -f sample_data.csv -o result.csv -e errors.csv -r YourRulesClass`
 7. all columns present in input file are output to the result file, optionally you may split any data value into multiple columns based on its contents;
 
 
 
 ## Detailed specification
 
-Let's be DRY and BDD, for a more detailed description / usage scenarios / sample command line calls, look into 'features/99_customer_spec.feature'.
+Let's be DRY and BDD, for a more detailed description / usage scenarios / sample command line calls, look into `features/99_customer_spec.feature`.
 
-Other 'feature' files contain more detailed test scenarios, but the above is enough to give you the big picture of what airparse is doing.
+Other `feature` files contain more detailed test scenarios, but the above is enough to give you the big picture of what airparse is doing.
 
 
 ## Cucumber test coverage
 
 So many tests for such a simple task? Think again - your code/rules will break sooner than you can imagine, probably tomorrow morning. You want to KNOW that overnight db import batch run will not kill your system? So create tests BEFORE it does. It can take ages to clean a production db; much, much longer than adding a few lines to a feature file.
 
-Supplied sample tests cover rules defined in the default 'AirParseDefaultRules' class (file lib/airparsedefaultrules.rb) and should be expanded at the same time, as rules are created.
+Supplied sample tests cover rules defined in the default `AirParseDefaultRules` class (file `lib/airparsedefaultrules.rb`) and should be expanded at the same time, as rules are created.
 
 
 
 ## Dev notes
 
-1. thinking about code quality/responsibility separation, I extracted actual validation/processing methods from the main airparse script to a separate ruby class located in the 'lib/' folder; these methods are dynamically called based on field names; it should be easy to delegate maintenance of these methods to a different developer; adding new business rules does not affect the main airparse script; airparse is logic agnostic, it should work with any csv file and any provided logic; when refactoring and changing airparse (eg. csv load/parse method), the logic will stay unchanged;
+1. thinking about code quality/responsibility separation, I extracted actual validation/processing methods from the main airparse script to a separate ruby class located in the `lib/`` folder; these methods are dynamically called based on field names; it should be easy to delegate maintenance of these methods to a different developer; adding new business rules does not affect the main airparse script; airparse is logic agnostic, it should work with any csv file and any provided logic; when refactoring and changing airparse (eg. csv load/parse method), the logic will stay unchanged;
 
 2. thinking about scalability, in this example I evaluated 3 methods for csv parsing:
    a. standard lib CSV
@@ -131,13 +131,11 @@ Supplied sample tests cover rules defined in the default 'AirParseDefaultRules' 
         pros: scalable, reads only one line to memory, should be able to read huge files, simple custom code - easy to debug/modify;
         cons: reinventing the wheel;
 
-   solution c. was chosen for airparse 1.0.0;
-
-   after some research, in version 1.0.2, CSV.parse is used without filesize limit: `CSV.foreach(opts[:file], headers: false) do |values|...`
+   after some research, since version 1.0.2, CSV is used without filesize limit: `CSV.foreach(opts[:file]) do |values|...`
 
 3. always prepare automated tests; in this repo I provide a few cucumber integration tests that check rules compliance with sample csv fixtures;
 
-4. think about stress testing; an optional '--iters' switch was added that allows to easily repeat the whole process eg. a few hundred thousand times;
+4. thinking about stress testing, an optional `--iters` switch was added that allows to easily repeat the whole process eg. a few hundred thousand times;
 
 5. when choosing tools, balance between DRY principle and control - we should use good gems, but do not leave everything out without getting our hands dirty; delegate whenever possbile, but never forget about the bigger picture/architecture;
 
