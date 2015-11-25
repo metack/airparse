@@ -1,16 +1,16 @@
 require_relative 'airparselib'
 
-# specific validation/processing logic for carrier type cleansing / classification
-
-# current input file model:
-# id,carrier_code,flight_number,flight_date
-
-# Default rules class, implement all your custom validators / processors here
+# Default rules class, implement all your validation/processing logic/classification code here
 class AirParseDefaultRules < AirParseLib
+  # Set custom headers for output files that are independent of the input file headers
   def initialize
     @output_data_header = "id,carrier_code_type,carrier_code,flight_number,date\n"
     @errors_data_header = "id,carrier_code,flight_number,flight_date\n"
   end
+
+
+  # current input file model:
+  # id,carrier_code,flight_number,flight_date
 
   # def is_valid_id(value)
   #   true

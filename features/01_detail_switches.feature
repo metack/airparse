@@ -6,7 +6,7 @@ Feature: process command lines switches correctly
 
   Scenario: to make sure that we are testing the correct version of the artifact, check whether the script is signed with the current build version number
     When I run `ruby airparse.rb -s`
-    Then the stdout should contain "AirParse 1.0.2"
+    Then the stdout should contain "AirParse 1.0.3"
 
   Scenario: check whether script without any input files at least runs without errorcode (just checking for correct ruby, gems and and system env)
     When I run `ruby airparse.rb -s`

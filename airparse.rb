@@ -8,7 +8,7 @@ require 'date'
 require 'fileutils'
 
 @opts = Trollop.options do
-  version 'AirParse 1.0.2, 2015 Maciej Kompf'
+  version 'AirParse 1.0.3, 2015 Maciej Kompf'
   banner <<-EOS
 Airparse is a lighweight csv parser/validator/processor.
 It can be used to parse any csv file, validate each value with

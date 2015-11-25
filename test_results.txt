@@ -5,7 +5,7 @@ Feature: process command lines switches correctly
 
   Scenario: to make sure that we are testing the correct version of the artifact, check whether the script is signed with the current build version number
     When I run `ruby airparse.rb -s`
-    Then the stdout should contain "AirParse 1.0.0"
+    Then the stdout should contain "AirParse 1.0.2"
 
   Scenario: check whether script without any input files at least runs without errorcode (just checking for correct ruby, gems and and system env)
     When I run `ruby airparse.rb -s`
@@ -49,7 +49,7 @@ Feature: split input file: save correct lines to "result.csv and incorrect lines
       10008046-0-1-0,TGD,7165,2013-08-021
       """
     When I run `ruby airparse.rb -f sample_data_carriers.csv -o result.csv -e errors.csv`
-    Then the stdout should contain "AirParse processing finished."
+    Then the stdout should contain "AirParse processing failed."
     And the file "sample_data_carriers.csv" should exist
     And the file "result.csv" should exist
     And the file "errors.csv" should exist
@@ -299,7 +299,8 @@ Feature: carrier_code should be recognized and marked according to a matching IA
     Then the stdout should contain "IATA"
     And the stdout should contain "AirParse processing finished."
 
-  @mtk_working_on @announce-output
+  #@mtk_working_on
+  #@announce-output
   Scenario: recognize and mark ICAO carrier_code, detect bad ICAO code, detect bad dates
     Given a file named "sample_data_carriers.csv" with:
       """
@@ -308,80 +309,44 @@ Feature: carrier_code should be recognized and marked according to a matching IA
       10008046-0-1-0,TG1,7165,2013-08-02
       10008046-0-1-0,TG1,7165,2013-08-211
       """
-<<-STDOUT
-
-AirParse processing started: 
-  input file: sample_data_carriers.csv
-  output file: result.csv
-  errors file: errors.csv
-  rules file: AirParseDefaultRules
-
-Iteration #1
-removing file: errors.csv
-removing file: result.csv
-
-processing:
-["10008046-0-1-0", "TGD", "7165", "2013-08-02"]
-calling validator: is_valid_id
-row validation results: {"correct":true,"reason":[]}
-calling processor: process_id
-processed result: ["10008046-0-1-0"]
-calling validator: is_valid_carrier_code
-row validation results: {"correct":true,"reason":[]}
-calling processor: process_carrier_code
-processed result: ["ICAO", "TGD"]
-calling validator: is_valid_flight_number
-row validation results: {"correct":true,"reason":[]}
-calling validator: is_valid_flight_date
-row validation results: {"correct":true,"reason":[]}
-
-processing:
-["10008046-0-1-0", "TG1", "7165", "2013-08-02"]
-calling validator: is_valid_id
-row validation results: {"correct":true,"reason":[]}
-calling processor: process_id
-processed result: ["10008046-0-1-0"]
-calling validator: is_valid_carrier_code
-row validation results: {"correct":false,"reason":["value does not match regular expression pattern"]}
-calling validator: is_valid_flight_number
-row validation results: {"correct":true,"reason":[]}
-calling validator: is_valid_flight_date
-row validation results: {"correct":true,"reason":[]}
-
-row 3 VALIDATION FAILED
-field: carrier_code  value: [TG1]  errors: ["value does not match regular expression pattern"]
-
-
-processing:
-["10008046-0-1-0", "TG1", "7165", "2013-08-211"]
-calling validator: is_valid_id
-row validation results: {"correct":true,"reason":[]}
-calling processor: process_id
-processed result: ["10008046-0-1-0"]
-calling validator: is_valid_carrier_code
-row validation results: {"correct":false,"reason":["value does not match regular expression pattern"]}
-calling validator: is_valid_flight_number
-row validation results: {"correct":true,"reason":[]}
-calling validator: is_valid_flight_date
-row validation results: {"correct":false,"reason":"invalid date"}
-
-row 4 VALIDATION FAILED
-field: carrier_code  value: [TG1]  errors: ["value does not match regular expression pattern"]
-field: flight_date  value: [2013-08-211]  errors: invalid date
-
-AirParse processing finished.
-
-STDOUT
-<<-STDERR
-
-STDERR
     When I run `ruby airparse.rb -f sample_data_carriers.csv -o result.csv -e errors.csv --verbose`
     Then the stdout should contain "ICAO"
+    And the stdout should contain "AirParse processing failed."
     And the stdout should contain "row 3 VALIDATION FAILED"
     And the stdout should contain "field: carrier_code  value: [TG1]  errors"
-    And the stdout should contain "AirParse processing finished."
     And the stdout should contain "row 3 VALIDATION FAILED"
     And the stdout should contain "field: flight_date  value: [2013-08-211]  errors: invalid date"
+
+@no-clobber
+Feature: CSV should correctly process full csv spec parsing
+
+  Scenario: check proper doublequote handling
+    Given a file named "sample_data_carriers.csv" with:
+      """
+      id,carrier_code,flight_number,flight_date
+      "10008046 -0-1-0","TGDD",7165,2013-08-02
+      10008918-0-1-0,DY*,3079,2012-10-26
+      10008046-0-1-0,"TGD",7165,2013-08-21
+      """
+    When I run `ruby airparse.rb -f sample_data_carriers.csv -o result.csv -e errors.csv`
+    Then the stdout should contain "row 2 VALIDATION FAILED"
+    And the stdout should contain "field: carrier_code  value: [TGDD]  errors"
+    And the stdout should contain "value does not match regular expression pattern"
+    And the stdout should contain "too long - more than 3 characters"
+
+  Scenario: check proper separator (comma) inside value handling
+    Given a file named "sample_data_carriers.csv" with:
+      """
+      id,carrier_code,flight_number,flight_date
+      "10008046,-0-1-0","T,GDD",7165,2013-08-02
+      10008918-0-1-0,DY*,3079,2012-10-26
+      10008046-0-1-0,"TGD",7165,2013-08-21
+      """
+    When I run `ruby airparse.rb -f sample_data_carriers.csv -o result.csv -e errors.csv`
+    Then the stdout should contain "row 2 VALIDATION FAILED"
+    And the stdout should contain "field: carrier_code  value: [T,GDD]  errors"
+    And the stdout should contain "value does not match regular expression pattern"
+    And the stdout should contain "too long - more than 3 characters"
 
 Feature: stress test 1
     In order to make sure that the script will work not only once
@@ -397,11 +362,11 @@ Feature: stress test 1
     And the file "errors.csv" should exist
 
 @no-clobber
-Feature: process command lines switches correctly
+Feature: test with the Customer Specification
   In order to deliver a complete solution
   As a developer using BDD who tests not only the general quality of the code,
-  but also checks the completeness of the specification fullfilment
-  I want to make sure that all of the following customer requirements / features are satisfied
+  But also checks the completeness of the specification fulfilment
+  I want to make sure that all of the following customer requirements are met
 
   # Command line interface:
   Scenario: 1.1 Command line must accept a file path of the input file to process.
@@ -465,9 +430,20 @@ Feature: process command lines switches correctly
     When I run `bash -c "head -n1 result.csv"`
     Then the stdout should contain "id,carrier_code_type,carrier_code,flight_number,date"
 
+  #@mtk_working_on
+  #@announce-output
   Scenario: 1.8 The only new data is carrier_code_type, the rest of the data is the same as the input
-    When I run `ruby airparse.rb -s`
-    Then the stdout should contain "1.0.0"
+    Given a file named "sample_data_carriers.csv" with:
+      """
+      id,carrier_code,flight_number,flight_date
+      10008046-0-1-0,TG,7165,2014-01-02
+      """
+    When I run `ruby airparse.rb -f sample_data_carriers.csv -o result.csv -e errors.csv`
+    Then the stdout should contain "AirParse processing finished."
+
+  Scenario: check whether "output.csv" file does contains correct data
+    When I run `bash -c "cat result.csv"`
+    Then the stdout should contain "10008046-0-1-0,IATA,TG,7165,2014-01-02"
 
   # Valid carrier_code_type values are: ICAO and IATA. See below for details on how to classify carrier codes.
   # Identifying carrier code types:
@@ -516,12 +492,12 @@ Feature: process command lines switches correctly
     Then the stdout should contain "row 2 VALIDATION FAILED"
     And the stdout should contain "[12/12/12]  errors: invalid date"
 
-  Scenario: check whether "output.csv" file does NOT contain the bad date AND the bad carrier_code entry
-    When I run `bash -c "cat output.csv"`
+  Scenario: check whether "result.csv" file does NOT contain the bad date AND the bad carrier_code entry
+    When I run `bash -c "cat result.csv"`
     Then the stdout should not contain "12/12/12"
     And the stdout should not contain "TGD*"
 
-  Scenario: check whether "error.csv" file contains exactly a single row with the bad date (stripping header)
+  Scenario: check whether "error.csv" file contains exactly a two rows with the bad date and code (stripping header)
     When I run `bash -c "tail -n +2 errors.csv"`
     Then the stdout should contain exactly "10008046-0-1-0,TG,7165,12/12/12\n10008047-0-1-0,TGD*,7165,2013-08-21"
 
@@ -547,5 +523,5 @@ Feature: process command lines switches correctly
     And the stdout should contain "row 701 VALIDATION FAILED"
     And the stdout should contain "field: flight_date  value: [22-03-2013]  errors: invalid date"
 
-47 scenarios (47 passed)
-215 steps (215 passed)
+50 scenarios (50 passed)
+230 steps (230 passed)

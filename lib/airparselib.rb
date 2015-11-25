@@ -3,29 +3,11 @@ require 'fileutils'
 
 # Main library class with a single usable method now -> process
 class AirParseLib
+  # Allows to set custom headers for output files that are independent of the input file headers
   attr_accessor :output_data_header, :errors_data_header
   def initialize
     @output_data_header = "\n"
     @errors_data_header = "\n"
-  end
-
-  # def initialize(argv, stdin=STDIN, stdout=STDOUT, stderr=STDERR, kernel=Kernel)
-  #   @argv, @stdin, @stdout, @stderr, @kernel = argv, stdin, stdout, stderr, kernel
-  # end
-
-  # def execute!
-  #   # your code here, assign a value to exitstatus
-  #   @kernel.exit(exitstatus)
-  # end
-
-  # Parses csv line
-  #
-  # @param [String] line a csv line to split into array
-  # @return [Array] containing separated items
-
-  def parse(line)
-    values = line.delete("\n").split(',') # strip new line character (if exists), split csv columns into fields
-    values # returns line values as an array
   end
 
   # Processes csv file passed with optional rules class to produce result and error output
@@ -39,7 +21,6 @@ class AirParseLib
   #                              should be named after the Class, but lowercase; all rules files must be
   #                              located within lib/ folder), default: 'AirParseDefaultRules'
   # @return [Boolean] true if processed with success, false otherwise
-
   def process(opts)
     # create specific AirParse instance from rules file specified on commandline
 
@@ -93,7 +74,8 @@ class AirParseLib
         # rule: numbers of data fields should eq to number of header/model variables
         if values.length != @air_model.length
           validation = { correct: false, reason: [] }
-          @mtkfailreasons << 'incorrect number of columns: ' + values.length.to_s + ' instead of ' + @air_model.length.to_s
+
+          @mtkfailreasons << ('incorrect number of columns: ' << values.length.to_s << ' instead of ' << @air_model.length.to_s)
         end
 
         data_output = []
@@ -125,7 +107,7 @@ class AirParseLib
             # process field validation results
             unless validation[:correct] # if validation failed
               if validation[:reason] # if exists, add detailed validation result description to row validation results array
-                @mtkfailreasons << 'field: ' + @air_model[cti] + '  value: [' + value + ']' + '  errors: ' + validation[:reason].to_s
+                @mtkfailreasons << ('field: ' << @air_model[cti] << '  value: [' + value + ']' << '  errors: ' << validation[:reason].to_s)
               end
             end
 
@@ -178,3 +160,27 @@ class AirParseLib
     @mtkfailreasons == []
   end
 end
+
+
+__END__
+
+  # below is for future expansion / reference only, ignore it
+
+  # def initialize(argv, stdin=STDIN, stdout=STDOUT, stderr=STDERR, kernel=Kernel)
+  #   @argv, @stdin, @stdout, @stderr, @kernel = argv, stdin, stdout, stderr, kernel
+  # end
+
+  # def execute!
+  #   # your code here, assign a value to exitstatus
+  #   @kernel.exit(exitstatus)
+  # end
+
+  # Parses csv line
+  #
+  # @param [String] line a csv line to split into array
+  # @return [Array] containing separated items
+
+  # def parse(line)
+  #   values = line.delete("\n").split(',') # strip new line character (if exists), split csv columns into fields
+  #   values # returns line values as an array
+  # end
