@@ -74,20 +74,24 @@ yuml.me:
 
 ## Algorithm
 
-airparse.rb script runs its' main method that calls AirParse.parse method for each *line*; each *value* from line is checked with AirParseDefaultRules.is_valid_* function and processed with AirParseDefaultRules.process_* method
+airparse.rb script calls AirParse.process method for the file specified
+
+AirParse.process has a loop that iterates each *line* and each *value*
+
+all atomic values are checked with AirParseDefaultRules.is_valid_* function and processed with AirParseDefaultRules.process_* method
 
 
 ## Installation/how to use (in 3 minutes)
 
 0. req: ruby >= 2.1, gems: cucumber, aruba, trollop
-1. clone this repo: 'git clone https://github.com/metack/airparse.git' & 'cd airparse'
-2. install gems: 'bundle install'
-3. run with a sample input file and settings: './run.sh'
-4. check 'results.csv' and 'error.csv'
-5. run tests: 'test/test.sh' & 'test/test_dump.sh'
-6. check 'test_results.txt'
-7. check the other switches './airparse.rb --help'
-8. play yourself: './airparse.rb -f sample_data.csv -o result.csv -e errors.csv'
+1. clone this repo: `git clone https://github.com/metack/airparse.git` & `cd airparse`
+2. install gems: `bundle install`
+3. run with a sample input file and settings: `./run.sh`
+4. check `results.csv` and `error.csv`
+5. run tests: `test/test.sh` & `test/test_dump.sh`
+6. check `test_results.txt`
+7. check the other switches `./airparse.rb --help`
+8. play yourself: `./airparse.rb -f sample_data.csv -o result.csv -e errors.csv`
 
 ## How to play?
 
@@ -118,7 +122,7 @@ Supplied sample tests cover rules defined in the default `AirParseDefaultRules` 
 
 ## Dev notes
 
-1. thinking about code quality/responsibility separation, I extracted actual validation/processing methods from the main airparse script to a separate ruby class located in the `lib/`` folder; these methods are dynamically called based on field names; it should be easy to delegate maintenance of these methods to a different developer; adding new business rules does not affect the main airparse script; airparse is logic agnostic, it should work with any csv file and any provided logic; when refactoring and changing airparse (eg. csv load/parse method), the logic will stay unchanged;
+1. thinking about code quality/responsibility separation, I extracted actual validation/processing methods from the main airparse script to a separate ruby class located in the `lib/` folder; these methods are dynamically called based on field names; it should be easy to delegate maintenance of these methods to a different developer; adding new business rules does not affect the main airparse script; airparse is logic agnostic, it should work with any csv file and any provided logic; when refactoring and changing airparse (eg. csv load/parse method), the logic will stay untouched;
 
 2. thinking about scalability, in this example I evaluated 3 methods for csv parsing:
    a. standard lib CSV
