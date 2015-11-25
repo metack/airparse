@@ -49,7 +49,7 @@ class AirParseLib
 
     # open(opts[:file]) do |csv|
     # csv.each_line do |line|
-    CSV.foreach(opts[:file], headers: false) do |values|
+    CSV.foreach(opts[:file]) do |values|
       ct += 1
 
       # old 3 lines, before CSV.foreach, so parse method is obsolete now

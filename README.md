@@ -84,7 +84,7 @@ airparse.rb script runs its' main method that calls AirParse.parse method for ea
 2. install gems: 'bundle install'
 3. run with a sample input file and settings: './run.sh'
 4. check 'results.csv' and 'error.csv'
-5. run tests: './test.sh' & './test_dump.sh'
+5. run tests: 'test/test.sh' & 'test/test_dump.sh'
 6. check 'test_results.txt'
 7. check the other switches './airparse.rb --help'
 8. play yourself: './airparse.rb -f sample_data.csv -o result.csv -e errors.csv'

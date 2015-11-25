@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.3
+- optimize string concat
+- remove improper CSV.header option setting
+
 ## 1.0.2
 
 - refactor code to behave more like a ruby lib
